@@ -1,8 +1,10 @@
 package com.example.demo.sec;
 
 import com.example.demo.sec.filters.JwtAuthenticationFilter;
+import com.example.demo.sec.filters.JwtAuthorizationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -12,6 +14,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -36,8 +39,11 @@ public class SecurityConfig {
                 .headers(h -> h.frameOptions(f -> f.disable()))
                 .authorizeHttpRequests(a -> a
                         .requestMatchers("/h2-console/**", "/login/**").permitAll()
+                        //.requestMatchers(HttpMethod.POST, "/users/**").hasAuthority("ADMIN")
+                        //.requestMatchers(HttpMethod.GET, "/users/**").hasAuthority("USER")
                         .anyRequest().authenticated())
                 .addFilter(new JwtAuthenticationFilter(authenticationManager))
+                .addFilterBefore(new JwtAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 }

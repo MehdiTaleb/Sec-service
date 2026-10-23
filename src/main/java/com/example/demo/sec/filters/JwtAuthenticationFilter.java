@@ -59,8 +59,18 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                         .map(GrantedAuthority::getAuthority).toList())
                 .sign(algorithm);
 
+
+        String jwtRefreshToken = JWT.create()
+                .withSubject(user.getUsername())
+                .withExpiresAt(new Date(System.currentTimeMillis() + 15 * 60 * 1000))
+                .withIssuer(request.getRequestURL().toString())
+                .withClaim("roles", user.getAuthorities().stream()
+                        .map(GrantedAuthority::getAuthority).toList())
+                .sign(algorithm);
+
         Map<String, String> idToken = new HashMap<>();
         idToken.put("access-token", jwtAccessToken);
+        idToken.put("refresh-token", jwtRefreshToken);
         response.setContentType("application/json");
         new ObjectMapper().writeValue(response.getOutputStream(), idToken);
     }
